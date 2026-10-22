@@ -2,10 +2,10 @@ const express = require('express');
 const mineflayer = require('mineflayer');
 
 const app = express();
-const PORT = process.env.PORT || 8080;
+const PORT = process.env.PORT || 10000;
 
 app.get('/', (req, res) => {
-  res.send('KEEPING_ONLINE Bot is active on Koyeb 24/7!');
+  res.send('KEEPING_ONLINE Bot is active on Render 24/7!');
 });
 
 app.listen(PORT, () => {
@@ -19,18 +19,22 @@ function createBot() {
     host: 'UwU_world.aternos.me',
     port: 30089,
     username: 'KEEPING_ONLINE',
-    version: false
+    version: '1.20.4',
+    physicsEnabled: false // অ্যান্টি-চিট কিক রোধ করতে ফিজিক্স অফ রাখা হয়েছে
   });
 
   bot.on('spawn', () => {
     console.log('SUCCESS: KEEPING_ONLINE has joined the server!');
     
+    // Anti-AFK: ঠিক প্রতি ১ মিনিটে (৬০ সেকেন্ডে) একবার জাম্প করবে
     setInterval(() => {
       if (bot && bot.entity) {
         bot.setControlState('jump', true);
-        setTimeout(() => bot.setControlState('jump', false), 500);
+        setTimeout(() => {
+          if (bot) bot.setControlState('jump', false);
+        }, 500); // আধ সেকেন্ড পর জাম্প ছেড়ে দেবে
       }
-    }, 25000);
+    }, 60000); // 60000 ms = 1 minute
   });
 
   bot.on('end', (reason) => {
