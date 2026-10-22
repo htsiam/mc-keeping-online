@@ -20,21 +20,20 @@ function createBot() {
     port: 30089,
     username: 'KEEPING_ONLINE',
     version: '1.20.4',
-    physicsEnabled: false // অ্যান্টি-চিট কিক রোধ করতে ফিজিক্স অফ রাখা হয়েছে
+    physicsEnabled: false
   });
 
   bot.on('spawn', () => {
     console.log('SUCCESS: KEEPING_ONLINE has joined the server!');
     
-    // Anti-AFK: ঠিক প্রতি ১ মিনিটে (৬০ সেকেন্ডে) একবার জাম্প করবে
     setInterval(() => {
       if (bot && bot.entity) {
         bot.setControlState('jump', true);
         setTimeout(() => {
           if (bot) bot.setControlState('jump', false);
-        }, 500); // আধ সেকেন্ড পর জাম্প ছেড়ে দেবে
+        }, 500);
       }
-    }, 60000); // 60000 ms = 1 minute
+    }, 60000);
   });
 
   bot.on('end', (reason) => {
