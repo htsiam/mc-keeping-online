@@ -16,18 +16,22 @@ function createBot() {
     host: 'UwU_world.aternos.me',
     port: 30089,
     username: 'KEEPING_ONLINE',
-    physicsEnabled: true,
+    physicsEnabled: false,
     version: false,
     hideErrors: true,
     checkTimeoutInterval: 60000
   });
 
-  bot.on('login', () => {
-    online = true;
-  });
-
   bot.on('spawn', () => {
     online = true;
+    
+    // Geyser-Spigot প্রক্সির সাথে সিংক mantener করার জন্য পজিশন লক করে রাখা
+    try {
+      if (bot.player && bot.player.entity) {
+        bot.setControlState('forward', false);
+        bot.setControlState('jump', false);
+      }
+    } catch (e) {}
   });
 
   bot.on('end', () => {
