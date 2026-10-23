@@ -16,8 +16,8 @@ function createBot() {
     host: 'UwU_world.aternos.me',
     port: 30089,
     username: 'KEEPING_ONLINE',
-    version: '26.3',
-    physicsEnabled: true,
+    version: false,
+    physicsEnabled: false,
     hideErrors: true,
     checkTimeoutInterval: 60000
   });
@@ -28,6 +28,13 @@ function createBot() {
 
   bot.on('spawn', () => {
     online = true;
+    
+    // সার্ভারের সাথে পজিশন সিংক করার জন্য একটি ফেক লুক প্যাকেট পাঠানো
+    try {
+      if (bot.entity) {
+        bot.look(0, 0, true);
+      }
+    } catch (e) {}
   });
 
   bot.on('end', () => {
