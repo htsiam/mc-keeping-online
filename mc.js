@@ -16,24 +16,18 @@ function createBot() {
     host: 'UwU_world.aternos.me',
     port: 30089,
     username: 'KEEPING_ONLINE',
-    physicsEnabled: false,
-    version: false,
+    version: '26.3',
+    physicsEnabled: true,
     hideErrors: true,
     checkTimeoutInterval: 60000
   });
 
-  // সার্ভারের পজিশন রিকোয়েস্ট বা মুভমেন্ট চেক বাইপাস করার জন্য প্যাকেট হুক
-  bot._client.on('packet', (data, metadata) => {
-    // সার্ভার থেকে পজিশন আপডেট চাইলে তা সাইলেন্টলি ইগনোর করা যাতে ইনভ্যালিড প্যাকেট না যায়
+  bot.on('login', () => {
+    online = true;
   });
 
   bot.on('spawn', () => {
     online = true;
-    
-    // বট যেন নড়াচড়া না করে পজিশন লক রাখে
-    if (bot.physics) {
-      bot.physics.gravity = 0;
-    }
   });
 
   bot.on('end', () => {
