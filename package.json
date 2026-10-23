@@ -1,7 +1,6 @@
 {
   "name": "minecraft-keep-online-bot",
   "version": "1.0.0",
-  "description": "24/7 Mineflayer bot with Express dashboard for Render + UptimeRobot",
   "main": "index.js",
   "scripts": {
     "start": "node index.js"
