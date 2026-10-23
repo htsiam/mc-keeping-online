@@ -52,7 +52,8 @@ function startBot() {
     host: HOST,
     port: PORT,
     username: USERNAME,
-    checkTimeoutInterval: 60000
+    checkTimeoutInterval: 60000,
+    hideErrors: true
   });
 
   bot.on('spawn', () => {
@@ -84,6 +85,9 @@ function startBot() {
   });
 
   bot.on('error', (err) => {
+    if (err.code === 'EPIPE' || err.code === 'ECONNRESET') {
+      return; 
+    }
     console.log('Bot error:', err.message);
     reconnect();
   });
@@ -101,5 +105,6 @@ function reconnect() {
 }
 
 process.on('uncaughtException', (err) => {
+  if (err.code === 'EPIPE' || err.code === 'ECONNRESET') return;
   console.log('Uncaught Exception:', err.message);
 });
