@@ -1,4 +1,3 @@
-// index.js
 const express = require('express');
 const mineflayer = require('mineflayer');
 
@@ -6,7 +5,7 @@ const HOST = 'UwU_world.aternos.me';
 const PORT = 30089;
 const USERNAME = 'KEEPING_ONLINE';
 const RECONNECT_DELAY = 10000;
-const ANTI_AFK_INTERVAL = 45000;
+const ANTI_AFK_INTERVAL = 60000; // প্রতি ১ মিনিটে একবার জাম্প করবে
 const WEB_PORT = process.env.PORT || 10000;
 
 let bot = null;
@@ -19,7 +18,6 @@ const app = express();
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
-// ─── Clean up previous bot instance ───────────────────────────────────────────
 function cleanup() {
   if (antiAfkInterval) {
     clearInterval(antiAfkInterval);
@@ -38,33 +36,20 @@ function cleanup() {
   }
 }
 
-// ─── Anti-AFK ─────────────────────────────────────────────────────────────────
+// শুধু জাম্প করার ফাংশন (অন্য কিছু করবে না)
 function startAntiAfk() {
   if (antiAfkInterval) clearInterval(antiAfkInterval);
   antiAfkInterval = setInterval(() => {
     if (!bot || status !== 'ONLINE') return;
     try {
-      // Jump
       bot.setControlState('jump', true);
       setTimeout(() => {
         if (bot) bot.setControlState('jump', false);
-      }, 350);
-
-      // Sneak toggle
-      bot.setControlState('sneak', true);
-      setTimeout(() => {
-        if (bot) bot.setControlState('sneak', false);
-      }, 400);
-
-      // Head rotation
-      const yaw = Math.random() * Math.PI * 2;
-      const pitch = (Math.random() - 0.5) * 0.6;
-      bot.look(yaw, pitch, true);
+      }, 300);
     } catch (_) {}
   }, ANTI_AFK_INTERVAL);
 }
 
-// ─── Create / reconnect bot ───────────────────────────────────────────────────
 function createBot() {
   if (isReconnecting) return;
   isReconnecting = true;
@@ -78,15 +63,14 @@ function createBot() {
     host: HOST,
     port: PORT,
     username: USERNAME,
-    // version left undefined → Mineflayer auto-detects
-    physicsEnabled: false,
+    physicsEnabled: true,
     hideErrors: true
   });
 
   bot.once('spawn', () => {
     status = 'ONLINE';
     isReconnecting = false;
-    console.log('[BOT] Spawned – ONLINE');
+    console.log('[BOT] Spawned – ONLINE (Jump only anti-AFK active)');
     startAntiAfk();
   });
 
@@ -97,11 +81,10 @@ function createBot() {
     } catch (_) {}
   });
 
-  // Ignore all chat from other players
   bot.on('chat', () => {});
 
   bot.on('kicked', (reason) => {
-    console.log('[BOT] Kicked:', reason);
+    console.log('[BOT] Kicked:', JSON.stringify(reason));
     status = 'OFFLINE';
     scheduleReconnect();
   });
@@ -136,7 +119,6 @@ function scheduleReconnect() {
   }, RECONNECT_DELAY);
 }
 
-// ─── Express routes ───────────────────────────────────────────────────────────
 app.get('/', (req, res) => {
   const statusColor =
     status === 'ONLINE' ? '#00ff88' :
@@ -256,7 +238,7 @@ app.get('/', (req, res) => {
     <p class="info">
       Server: ${HOST}:${PORT}<br>
       Username: ${USERNAME}<br>
-      Auto-reconnect & Anti-AFK active
+      Mode: Jump-only Anti-AFK
     </p>
 
     <label for="cmd">Send chat / command</label>
@@ -275,7 +257,6 @@ app.get('/', (req, res) => {
     const cmdInput = document.getElementById('cmd');
     const feedback = document.getElementById('feedback');
 
-    // Auto-refresh status every 8 s
     setInterval(async () => {
       try {
         const res = await fetch('/status');
@@ -341,7 +322,6 @@ app.post('/send-chat', (req, res) => {
   }
 });
 
-// ─── Process safety nets ──────────────────────────────────────────────────────
 process.on('uncaughtException', (err) => {
   console.error('[PROCESS] Uncaught Exception:', err.message);
 });
@@ -349,7 +329,6 @@ process.on('unhandledRejection', (reason) => {
   console.error('[PROCESS] Unhandled Rejection:', reason);
 });
 
-// ─── Start ────────────────────────────────────────────────────────────────────
 app.listen(WEB_PORT, () => {
   console.log(`[WEB] Dashboard listening on port ${WEB_PORT}`);
   createBot();
