@@ -1,15 +1,12 @@
 {
-  "name": "minecraft-keep-online-bot",
+  "name": "mc-keep-online",
   "version": "1.0.0",
-  "main": "index.js",
+  "main": "mc.js",
   "scripts": {
-    "start": "node index.js"
-  },
-  "engines": {
-    "node": ">=18"
+    "start": "node mc.js"
   },
   "dependencies": {
-    "express": "^4.21.0",
-    "mineflayer": "^4.20.0"
+    "express": "^4.21.2",
+    "mineflayer": "^4.33.0"
   }
 }
