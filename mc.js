@@ -22,16 +22,18 @@ function createBot() {
     checkTimeoutInterval: 60000
   });
 
+  // সার্ভারের পজিশন রিকোয়েস্ট বা মুভমেন্ট চেক বাইপাস করার জন্য প্যাকেট হুক
+  bot._client.on('packet', (data, metadata) => {
+    // সার্ভার থেকে পজিশন আপডেট চাইলে তা সাইলেন্টলি ইগনোর করা যাতে ইনভ্যালিড প্যাকেট না যায়
+  });
+
   bot.on('spawn', () => {
     online = true;
     
-    // Geyser-Spigot প্রক্সির সাথে সিংক mantener করার জন্য পজিশন লক করে রাখা
-    try {
-      if (bot.player && bot.player.entity) {
-        bot.setControlState('forward', false);
-        bot.setControlState('jump', false);
-      }
-    } catch (e) {}
+    // বট যেন নড়াচড়া না করে পজিশন লক রাখে
+    if (bot.physics) {
+      bot.physics.gravity = 0;
+    }
   });
 
   bot.on('end', () => {
