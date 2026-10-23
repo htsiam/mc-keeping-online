@@ -1,0 +1,221 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MC Keep Online</title>
+  <style>
+    :root {
+      --bg: #0d1117;
+      --bg-secondary: #161b22;
+      --border: #30363d;
+      --text: #e6edf3;
+      --text-muted: #8b949e;
+      --accent: #238636;
+      --red: #da3633;
+      --green-glow: 0 0 12px rgba(35, 134, 54, 0.7), 0 0 24px rgba(35, 134, 54, 0.4);
+      --red-glow: 0 0 12px rgba(218, 54, 51, 0.7), 0 0 24px rgba(218, 54, 51, 0.4);
+    }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+    body {
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans", Helvetica, Arial, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      padding: 2rem 1rem;
+    }
+    .container {
+      width: 100%;
+      max-width: 520px;
+    }
+    h1 {
+      font-size: 1.5rem;
+      font-weight: 600;
+      margin-bottom: 1.5rem;
+      text-align: center;
+      letter-spacing: -0.02em;
+    }
+    .card {
+      background: var(--bg-secondary);
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 1.5rem;
+      margin-bottom: 1.25rem;
+    }
+    .status-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 1rem;
+    }
+    .status-label {
+      font-size: 0.875rem;
+      color: var(--text-muted);
+      font-weight: 500;
+    }
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.5rem;
+      padding: 0.4rem 0.9rem;
+      border-radius: 999px;
+      font-size: 0.8125rem;
+      font-weight: 600;
+      letter-spacing: 0.03em;
+      text-transform: uppercase;
+      transition: all 0.3s ease;
+    }
+    .badge.online {
+      background: rgba(35, 134, 54, 0.2);
+      color: #3fb950;
+      box-shadow: var(--green-glow);
+      border: 1px solid rgba(35, 134, 54, 0.4);
+    }
+    .badge.offline {
+      background: rgba(218, 54, 51, 0.2);
+      color: #f85149;
+      box-shadow: var(--red-glow);
+      border: 1px solid rgba(218, 54, 51, 0.4);
+    }
+    .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: currentColor;
+      animation: pulse 1.8s ease-in-out infinite;
+    }
+    @keyframes pulse {
+      0%, 100% { opacity: 1; transform: scale(1); }
+      50% { opacity: 0.5; transform: scale(0.85); }
+    }
+    .form-group {
+      margin-bottom: 1rem;
+    }
+    label {
+      display: block;
+      font-size: 0.8125rem;
+      color: var(--text-muted);
+      margin-bottom: 0.4rem;
+      font-weight: 500;
+    }
+    input[type="text"] {
+      width: 100%;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      border-radius: 8px;
+      padding: 0.7rem 0.9rem;
+      color: var(--text);
+      font-size: 0.9375rem;
+      outline: none;
+      transition: border-color 0.2s;
+    }
+    input[type="text"]:focus {
+      border-color: #58a6ff;
+      box-shadow: 0 0 0 3px rgba(88, 166, 255, 0.15);
+    }
+    button {
+      width: 100%;
+      background: var(--accent);
+      color: #fff;
+      border: none;
+      border-radius: 8px;
+      padding: 0.75rem 1rem;
+      font-size: 0.9375rem;
+      font-weight: 600;
+      cursor: pointer;
+      transition: background 0.2s, transform 0.1s;
+    }
+    button:hover {
+      background: #2ea043;
+    }
+    button:active {
+      transform: scale(0.98);
+    }
+    button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+    }
+    .footer {
+      text-align: center;
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      margin-top: 1.5rem;
+    }
+  </style>
+</head>
+<body>
+  <div class="container">
+    <h1>MC Keep Online</h1>
+    <div class="card">
+      <div class="status-row">
+        <span class="status-label">Bot Status</span>
+        <span id="statusBadge" class="badge offline">
+          <span class="dot"></span>
+          <span id="statusText">OFFLINE</span>
+        </span>
+      </div>
+    </div>
+    <div class="card">
+      <form id="chatForm">
+        <div class="form-group">
+          <label for="message">Send Chat / Command</label>
+          <input type="text" id="message" name="message" placeholder="Enter message or /command..." autocomplete="off" required>
+        </div>
+        <button type="submit" id="sendBtn">Send</button>
+      </form>
+    </div>
+    <p class="footer">Auto-refreshes status every 5s · Idle mode</p>
+  </div>
+  <script>
+    const badge = document.getElementById('statusBadge');
+    const statusText = document.getElementById('statusText');
+    const form = document.getElementById('chatForm');
+    const messageInput = document.getElementById('message');
+    const sendBtn = document.getElementById('sendBtn');
+
+    async function updateStatus() {
+      try {
+        const res = await fetch('/status');
+        const data = await res.json();
+        if (data.online) {
+          badge.className = 'badge online';
+          statusText.textContent = 'ONLINE';
+        } else {
+          badge.className = 'badge offline';
+          statusText.textContent = 'OFFLINE';
+        }
+      } catch (e) {
+        badge.className = 'badge offline';
+        statusText.textContent = 'OFFLINE';
+      }
+    }
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const message = messageInput.value.trim();
+      if (!message) return;
+      sendBtn.disabled = true;
+      try {
+        await fetch('/send-chat', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ message })
+        });
+        messageInput.value = '';
+      } catch (err) {}
+      sendBtn.disabled = false;
+      messageInput.focus();
+    });
+
+    updateStatus();
+    setInterval(updateStatus, 5000);
+  </script>
+</body>
+</html>
