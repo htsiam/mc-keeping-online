@@ -16,7 +16,7 @@ function createBot() {
     host: 'UwU_world.aternos.me',
     port: 30089,
     username: 'KEEPING_ONLINE',
-    physicsEnabled: false,
+    physicsEnabled: true,
     version: false,
     hideErrors: true,
     checkTimeoutInterval: 60000
@@ -36,7 +36,7 @@ function createBot() {
     setTimeout(createBot, 15000);
   });
 
-  bot.on('kicked', () => {
+  bot.on('kicked', (reason) => {
     online = false;
   });
 
