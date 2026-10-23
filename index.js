@@ -73,13 +73,13 @@ function startBot() {
     host: HOST,
     port: PORT,
     username: USERNAME,
-    physicsEnabled: true,
-    checkTimeoutInterval: 60000,
+    physicsEnabled: false,
+    checkTimeoutInterval: 30000,
     hideErrors: true
   });
 
   bot.on('spawn', () => {
-    console.log('SUCCESS: Bot joined the server and standing idle!');
+    console.log('SUCCESS: Bot joined the server!');
   });
 
   bot.on('death', () => {
