@@ -1,12 +1,16 @@
 {
-  "name": "mc-fake-player-bot",
+  "name": "minecraft-keep-online-bot",
   "version": "1.0.0",
+  "description": "24/7 Mineflayer bot with Express dashboard for Render + UptimeRobot",
   "main": "index.js",
   "scripts": {
     "start": "node index.js"
   },
+  "engines": {
+    "node": ">=18"
+  },
   "dependencies": {
-    "express": "^4.18.2",
+    "express": "^4.21.0",
     "mineflayer": "^4.20.0"
   }
 }
