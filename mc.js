@@ -1,19 +1,26 @@
 const mineflayer = require('mineflayer')
+const express = require('express')
 
-// ========== CONFIG ==========
 const HOST = 'UwU_world.aternos.me'
 const PORT = 30089
 const USERNAME = 'Herobrine'
 const VERSION = '1.20.1'
-// ============================
+const WEB_PORT = process.env.PORT || 3000
+
+const app = express()
+app.get('/', (req, res) => {
+  res.send('Minecraft Bot is Running!')
+})
+app.listen(WEB_PORT, () => {
+  console.log(`[${new Date().toLocaleTimeString()}] Web server listening on port ${WEB_PORT}`)
+})
 
 let bot = null
 let reconnectTimeout = null
 let isConnecting = false
-const RECONNECT_DELAY = 10000 // 10 seconds AFTER disconnect only
+const RECONNECT_DELAY = 12000
 
 function createBot() {
-  // Prevent double connections
   if (isConnecting || (bot && bot.entity)) {
     console.log(`[${new Date().toLocaleTimeString()}] Already connected or connecting – skip`)
     return
@@ -22,9 +29,11 @@ function createBot() {
   isConnecting = true
   console.log(`[${new Date().toLocaleTimeString()}] Connecting to ${HOST}:${PORT} as ${USERNAME}...`)
 
-  // Clean up any previous bot
   if (bot) {
-    try { bot.removeAllListeners(); bot.quit() } catch (e) {}
+    try {
+      bot.removeAllListeners()
+      bot.end()
+    } catch (e) {}
     bot = null
   }
 
@@ -34,7 +43,7 @@ function createBot() {
     username: USERNAME,
     version: VERSION,
     auth: 'offline',
-    physicsEnabled: false,   // keeps "Invalid move player packet" away
+    physicsEnabled: false,
     viewDistance: 2,
     hideErrors: false
   })
@@ -56,7 +65,6 @@ function createBot() {
   bot.on('kicked', (reason) => {
     console.log(`[${new Date().toLocaleTimeString()}] Kicked:`, reason.toString())
     isConnecting = false
-    // 'end' will fire after this, so reconnect is handled there
   })
 
   bot.on('end', (reason) => {
@@ -82,7 +90,6 @@ function scheduleReconnect() {
   }, RECONNECT_DELAY)
 }
 
-// Start once
 createBot()
 
 process.on('SIGINT', () => {
