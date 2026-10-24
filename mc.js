@@ -4,12 +4,12 @@ const mineflayer = require('mineflayer')
 const HOST = 'UwU_world.aternos.me'
 const PORT = 30089
 const USERNAME = 'Herobrine'
-const VERSION = '1.20.1'               // stable, works great with ViaVersion + ViaBackwards
+const VERSION = '26.3'               // stable, works great with ViaVersion + ViaBackwards
 // ============================
 
 let bot = null
 let reconnectTimeout = null
-const RECONNECT_DELAY = 10000          // 10 seconds
+const RECONNECT_DELAY = 12000          //  seconds
 
 function createBot() {
   console.log(`[${new Date().toLocaleTimeString()}] Connecting to ${HOST}:${PORT} as ${USERNAME}...`)
