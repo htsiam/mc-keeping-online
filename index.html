@@ -1,0 +1,413 @@
+<!DOCTYPE html>
+<html lang="bn">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MC Keep Online Dashboard</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Fira+Code:wght@400;500&family=Inter:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-dark: #0d1117;
+            --card-bg: #161b22;
+            --border: #30363d;
+            --text-main: #c9d1d9;
+            --text-muted: #8b949e;
+            --accent-green: #238636;
+            --accent-green-hover: #2ea043;
+            --status-online: #3fb950;
+            --status-offline: #f85149;
+            --console-bg: #010409;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            color: var(--text-main);
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            padding: 24px 16px;
+        }
+
+        .container {
+            width: 100%;
+            max-width: 850px;
+            display: flex;
+            flex-direction: column;
+            gap: 20px;
+        }
+
+        /* Header */
+        header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            padding: 16px 24px;
+            border-radius: 12px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.3);
+        }
+
+        .logo {
+            font-size: 1.25rem;
+            font-weight: 700;
+            color: #ffffff;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .status-pill {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            padding: 6px 14px;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            letter-spacing: 0.5px;
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--border);
+            transition: all 0.3s ease;
+        }
+
+        .status-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 50%;
+            background-color: var(--status-offline);
+            box-shadow: 0 0 8px var(--status-offline);
+            transition: all 0.3s ease;
+        }
+
+        .status-pill.online {
+            border-color: rgba(63, 185, 80, 0.3);
+            background: rgba(63, 185, 80, 0.1);
+            color: var(--status-online);
+        }
+
+        .status-pill.online .status-dot {
+            background-color: var(--status-online);
+            box-shadow: 0 0 10px var(--status-online);
+        }
+
+        .status-pill.offline {
+            border-color: rgba(248, 81, 73, 0.3);
+            background: rgba(248, 81, 73, 0.1);
+            color: var(--status-offline);
+        }
+
+        /* Status Grid */
+        .status-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+            gap: 16px;
+        }
+
+        .card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            padding: 18px 20px;
+            display: flex;
+            flex-direction: column;
+            gap: 6px;
+        }
+
+        .card-label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.8px;
+            color: var(--text-muted);
+            font-weight: 600;
+        }
+
+        .card-value {
+            font-size: 1.05rem;
+            font-weight: 600;
+            color: #ffffff;
+            word-break: break-all;
+        }
+
+        /* Console Box */
+        .console-card {
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+            overflow: hidden;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .console-header {
+            padding: 12px 20px;
+            background: rgba(255, 255, 255, 0.02);
+            border-bottom: 1px solid var(--border);
+            font-size: 0.85rem;
+            font-weight: 600;
+            color: var(--text-muted);
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+        }
+
+        .console-body {
+            background: var(--console-bg);
+            padding: 16px;
+            height: 320px;
+            overflow-y: auto;
+            font-family: 'Fira Code', monospace;
+            font-size: 0.85rem;
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+            scroll-behavior: smooth;
+        }
+
+        .log-entry {
+            line-height: 1.5;
+            word-break: break-word;
+        }
+
+        .log-time {
+            color: var(--text-muted);
+            margin-right: 8px;
+        }
+
+        .log-msg-info { color: #58a6ff; }
+        .log-msg-success { color: var(--status-online); }
+        .log-msg-error { color: var(--status-offline); }
+        .log-msg-sent { color: #d2a8ff; }
+
+        /* Command Form */
+        .input-form {
+            display: flex;
+            gap: 12px;
+            padding: 16px;
+            background: var(--card-bg);
+            border: 1px solid var(--border);
+            border-radius: 12px;
+        }
+
+        .input-field {
+            flex: 1;
+            background: var(--console-bg);
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            padding: 12px 16px;
+            color: var(--text-main);
+            font-size: 0.95rem;
+            outline: none;
+            transition: border-color 0.2s ease;
+        }
+
+        .input-field:focus {
+            border-color: #58a6ff;
+            box-shadow: 0 0 0 3px rgba(88, 166, 255, 0.15);
+        }
+
+        .btn-send {
+            background: var(--accent-green);
+            color: #ffffff;
+            border: none;
+            border-radius: 8px;
+            padding: 0 24px;
+            font-weight: 600;
+            font-size: 0.95rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .btn-send:hover {
+            background: var(--accent-green-hover);
+            transform: translateY(-1px);
+        }
+
+        .btn-send:active {
+            transform: translateY(0);
+        }
+
+        /* Mobile Responsive */
+        @media (max-width: 600px) {
+            body {
+                padding: 12px 8px;
+            }
+
+            header {
+                flex-direction: column;
+                gap: 12px;
+                align-items: flex-start;
+            }
+
+            .status-pill {
+                align-self: flex-start;
+            }
+
+            .input-form {
+                flex-direction: column;
+            }
+
+            .btn-send {
+                padding: 12px;
+            }
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <!-- Header -->
+    <header>
+        <div class="logo">
+            <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#58a6ff" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 16V7a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v9m16 0H4m16 0 1.28 2.55a1 1 0 0 1-.9 1.45H3.62a1 1 0 0 1-.9-1.45L4 16"/><path d="M12 12v.01"/></svg>
+            MC Keep Online
+        </div>
+        <div id="statusPill" class="status-pill offline">
+            <div class="status-dot"></div>
+            <span id="statusText">CONNECTING...</span>
+        </div>
+    </header>
+
+    <!-- Status Cards -->
+    <div class="status-grid">
+        <div class="card">
+            <span class="card-label">Bot Username</span>
+            <span class="card-value" id="botUsername">Herobrine</span>
+        </div>
+        <div class="card">
+            <span class="card-label">Server IP</span>
+            <span class="card-value" id="serverIp">UwU_world.aternos.me:30089</span>
+        </div>
+        <div class="card">
+            <span class="card-label">Connection State</span>
+            <span class="card-value" id="botState">Checking...</span>
+        </div>
+    </div>
+
+    <!-- Terminal Output -->
+    <div class="console-card">
+        <div class="console-header">
+            <span>TERMINAL LOGS</span>
+            <span style="font-size: 0.75rem;">LIVE</span>
+        </div>
+        <div class="console-body" id="consoleBody">
+            <div class="log-entry">
+                <span class="log-time">[SYSTEM]</span>
+                <span class="log-msg-info">Dashboard initialized. Connecting to status API...</span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Chat / Command Input -->
+    <form class="input-form" id="commandForm">
+        <input 
+            type="text" 
+            id="chatInput" 
+            class="input-field" 
+            placeholder="Send message or /command..." 
+            autocomplete="off" 
+            required
+        />
+        <button type="submit" class="btn-send">Send</button>
+    </form>
+</div>
+
+<script>
+    const statusPill = document.getElementById('statusPill');
+    const statusText = document.getElementById('statusText');
+    const botState = document.getElementById('botState');
+    const consoleBody = document.getElementById('consoleBody');
+    const commandForm = document.getElementById('commandForm');
+    const chatInput = document.getElementById('chatInput');
+
+    function getTimestamp() {
+        return new Date().toLocaleTimeString('en-US', { hour12: false });
+    }
+
+    function addLog(message, type = 'info') {
+        const entry = document.createElement('div');
+        entry.className = 'log-entry';
+        
+        const timeSpan = document.createElement('span');
+        timeSpan.className = 'log-time';
+        timeSpan.textContent = `[${getTimestamp()}]`;
+
+        const msgSpan = document.createElement('span');
+        msgSpan.className = `log-msg-${type}`;
+        msgSpan.textContent = ` ${message}`;
+
+        entry.appendChild(timeSpan);
+        entry.appendChild(msgSpan);
+        consoleBody.appendChild(entry);
+
+        // Auto-scroll to bottom
+        consoleBody.scrollTop = consoleBody.scrollHeight;
+    }
+
+    async function checkStatus() {
+        try {
+            const res = await fetch('/status');
+            if (!res.ok) throw new Error('API unreachable');
+            const data = await res.json();
+
+            if (data.online) {
+                statusPill.className = 'status-pill online';
+                statusText.textContent = 'ONLINE';
+                botState.textContent = data.state || 'Connected';
+            } else {
+                statusPill.className = 'status-pill offline';
+                statusText.textContent = 'OFFLINE';
+                botState.textContent = data.state || 'Disconnected';
+            }
+        } catch (err) {
+            statusPill.className = 'status-pill offline';
+            statusText.textContent = 'OFFLINE';
+            botState.textContent = 'Server Unreachable';
+        }
+    }
+
+    // Command Form Submit
+    commandForm.addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const message = chatInput.value.trim();
+        if (!message) return;
+
+        addLog(`Sending: ${message}`, 'sent');
+        chatInput.value = '';
+
+        try {
+            const res = await fetch('/send-chat', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ message })
+            });
+
+            if (res.ok) {
+                addLog(`Message delivered successfully`, 'success');
+            } else {
+                addLog(`Failed to send message`, 'error');
+            }
+        } catch (err) {
+            addLog(`Error sending command: ${err.message}`, 'error');
+        }
+    });
+
+    // Initial Fetch & Interval
+    checkStatus();
+    setInterval(checkStatus, 5000);
+</script>
+
+</body>
+</html>
