@@ -1,12 +1,12 @@
 {
-  "name": "mc-keep-online",
+  "name": "afk-keepalive-bot",
   "version": "1.0.0",
+  "description": "Simple standing AFK bot to keep Aternos / Minecraft server online",
   "main": "mc.js",
   "scripts": {
     "start": "node mc.js"
   },
   "dependencies": {
-    "express": "^4.21.2",
-    "mineflayer": "^4.33.0"
+    "mineflayer": "^4.39.0"
   }
 }
