@@ -6,17 +6,17 @@ const mineflayer = require('mineflayer');
 const app = express();
 const PORT = process.env.PORT || 10000;
 
+const MC_HOST = process.env.MC_HOST || 'UwU_world.aternos.me';
+const MC_PORT = Number(process.env.MC_PORT || 30089);
+const MC_USERNAME = process.env.MC_USERNAME || 'KEEPING_ONLINE';
+const RECONNECT_DELAY = 10000;
+
 app.use(express.json({ limit: '10kb' }));
 app.use(express.urlencoded({ extended: true }));
-
-const SERVER_HOST = process.env.MC_HOST || 'UwU_world.aternos.me';
-const SERVER_PORT = Number(process.env.MC_PORT || 30089);
-const BOT_USERNAME = process.env.MC_USERNAME || 'KEEPING_ONLINE';
 
 let bot = null;
 let online = false;
 let reconnectTimer = null;
-let reconnectDelay = 15000;
 let stopping = false;
 
 function log(...args) {
@@ -26,37 +26,35 @@ function log(...args) {
 function scheduleReconnect() {
   if (stopping || reconnectTimer) return;
 
-  log(`Reconnecting in ${reconnectDelay / 1000}s...`);
+  log('Reconnecting in 10 seconds...');
 
   reconnectTimer = setTimeout(() => {
     reconnectTimer = null;
     createBot();
-  }, reconnectDelay);
-
-  reconnectDelay = Math.min(reconnectDelay * 1.5, 60000);
+  }, RECONNECT_DELAY);
 }
 
 function createBot() {
   if (stopping || bot) return;
 
-  log(`Connecting to ${SERVER_HOST}:${SERVER_PORT}...`);
+  log(`Connecting to ${MC_HOST}:${MC_PORT}...`);
 
   let currentBot;
 
   try {
     currentBot = mineflayer.createBot({
-      host: SERVER_HOST,
-      port: SERVER_PORT,
-      username: BOT_USERNAME,
+      host: MC_HOST,
+      port: MC_PORT,
+      username: MC_USERNAME,
       version: false,
       hideErrors: false,
       checkTimeoutInterval: 60000
 
-      // Keep default physics enabled.
-      // Do not send artificial movement packets.
+      // Default physics remains enabled.
+      // No artificial movement packets.
     });
   } catch (err) {
-    log('Bot creation failed:', err.message);
+    log('Bot creation error:', err.message);
     scheduleReconnect();
     return;
   }
@@ -65,8 +63,8 @@ function createBot() {
   online = false;
 
   currentBot.on('login', () => {
+    if (bot !== currentBot) return;
     log('Bot logged in.');
-    reconnectDelay = 15000;
   });
 
   currentBot.on('spawn', () => {
@@ -92,27 +90,26 @@ function createBot() {
       bot = null;
     }
 
-    log('Bot disconnected:', reason || 'connection ended');
-
+    log('Bot disconnected:', reason || 'Connection ended');
     scheduleReconnect();
   });
 }
 
-// Web dashboard
+// Dashboard
 app.get('/', (req, res) => {
   res.sendFile(path.join(__dirname, 'index.html'));
 });
 
-// Status endpoint
+// Bot status
 app.get('/status', (req, res) => {
   res.json({
     online: Boolean(bot && online),
-    username: BOT_USERNAME,
-    host: SERVER_HOST
+    username: MC_USERNAME,
+    host: MC_HOST
   });
 });
 
-// Send Minecraft chat or command
+// Send chat or command
 app.post('/send-chat', (req, res) => {
   const message = req.body?.message;
 
@@ -135,20 +132,22 @@ app.post('/send-chat', (req, res) => {
 
     return res.json({ ok: true });
   } catch (err) {
-    log('Chat send failed:', err.message);
+    log('Chat error:', err.message);
 
     return res.status(500).json({
       ok: false,
-      error: 'Could not send message.'
+      error: 'Failed to send message.'
     });
   }
 });
 
+// Start web server
 const server = app.listen(PORT, '0.0.0.0', () => {
   log(`Web server listening on port ${PORT}`);
   createBot();
 });
 
+// Graceful shutdown
 function shutdown() {
   if (stopping) return;
 
